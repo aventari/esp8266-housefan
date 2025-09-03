@@ -2,14 +2,14 @@
 #include <ESP8266WebServer.h>
 
 // ---- WiFi credentials ----
-const char* ssid     = "big if true";
-const char* password = "YOUR_PASSWORD";
+const char* ssid     = "glizzy";
+const char* password = "*PASS*";
 
 // ---- INPUT PINS (LED monitors) ----
-const int LED_ON_PIN       = D1;
-const int LED_OFF_PIN      = D2;
-const int LED_FAN_LOW_PIN  = D3;
-const int LED_FAN_HIGH_PIN = D4;
+const int INPUT_LED_ON_PIN       = D1;
+const int INPUT_LED_OFF_PIN      = D2;
+const int INPUT_LED_FAN_LOW_PIN  = D3;
+const int INPUT_LED_FAN_HIGH_PIN = D4;
 
 // ---- OUTPUT PINS (controls) ----
 const int TIMER_PIN = D5;
@@ -23,11 +23,12 @@ void setup() {
   Serial.begin(115200);
 
   // Inputs
-  pinMode(LED_ON_PIN, INPUT);
-  pinMode(LED_OFF_PIN, INPUT);
-  pinMode(LED_FAN_LOW_PIN, INPUT);
-  pinMode(LED_FAN_HIGH_PIN, INPUT);
-
+  pinMode(INPUT_LED_ON_PIN, INPUT);
+  pinMode(INPUT_LED_OFF_PIN, INPUT);
+  pinMode(INPUT_LED_FAN_LOW_PIN, INPUT);
+  pinMode(INPUT_LED_FAN_HIGH_PIN, INPUT);
+  
+  pinMode(LED_BUILTIN, OUTPUT);  // Initialize the LED_BUILTIN pin as an output
   // Outputs
   pinMode(TIMER_PIN, OUTPUT);
   pinMode(POWER_PIN, OUTPUT);
@@ -41,8 +42,14 @@ void setup() {
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi");
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
+    digitalWrite(LED_BUILTIN, LOW);  // Turn the LED on (Note that LOW is the voltage level
+    delay(100);                      // Wait for a second
+    digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
+    delay(1000);
+    digitalWrite(LED_BUILTIN, LOW);  // Turn the LED on (Note that LOW is the voltage level
+    delay(200);                      // Wait for a second
+    digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
+    delay(2000);
   }
   Serial.println("\nConnected to WiFi!");
   Serial.print("IP Address: ");
@@ -57,10 +64,13 @@ void setup() {
   server.on("/timer", []() { pulseTimer(); server.sendHeader("Location", "/"); server.send(303); });
 
   server.begin();
+  digitalWrite(LED_BUILTIN, LOW);  // Turn the LED on (Note that LOW is the voltage level
+  
 }
 
 void loop() {
   server.handleClient();
+  
 }
 
 void handleRoot() {
@@ -71,10 +81,10 @@ void handleRoot() {
 
   // Show LED states
   html += "<h3>Status LEDs</h3>";
-  html += "ON LED: " + String(digitalRead(LED_ON_PIN)) + "<br>";
-  html += "OFF LED: " + String(digitalRead(LED_OFF_PIN)) + "<br>";
-  html += "FAN LOW LED: " + String(digitalRead(LED_FAN_LOW_PIN)) + "<br>";
-  html += "FAN HIGH LED: " + String(digitalRead(LED_FAN_HIGH_PIN)) + "<br>";
+  html += "ON LED: " + String(digitalRead(INPUT_LED_ON_PIN)) + "<br>";
+  html += "OFF LED: " + String(digitalRead(INPUT_LED_OFF_PIN)) + "<br>";
+  html += "FAN LOW LED: " + String(digitalRead(INPUT_LED_FAN_LOW_PIN)) + "<br>";
+  html += "FAN HIGH LED: " + String(digitalRead(INPUT_LED_FAN_HIGH_PIN)) + "<br>";
 
   // Buttons
   html += "<h3>Controls</h3>";
